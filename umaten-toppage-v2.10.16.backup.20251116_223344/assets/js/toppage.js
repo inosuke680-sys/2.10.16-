@@ -56,15 +56,16 @@
                 self.currentChildSlug = childSlug;
                 self.currentChildId = childId;
 
-                // 【v2.10.16】子カテゴリがある場合は再度子カテゴリを読み込み、ない場合はタグを表示
+                // 【v2.10.18】子カテゴリがある場合は再度子カテゴリを読み込み、ない場合はタグを表示
                 if (hasChildren) {
-                    console.log('[v2.10.16] さらに子カテゴリがあるため、次の階層を読み込みます');
+                    console.log('[v2.10.18] さらに子カテゴリがあるため、次の階層を読み込みます');
                     self.closeModal('#child-category-modal');
                     setTimeout(function() {
-                        self.loadChildCategories(childSlug);
+                        // 【v2.10.18】子カテゴリから呼び出す場合は isRegion: false
+                        self.loadChildCategories(childSlug, false);
                     }, 300);
                 } else {
-                    console.log('[v2.10.16] 最終階層のため、ジャンル選択へ');
+                    console.log('[v2.10.18] 最終階層のため、ジャンル選択へ');
                     self.closeModal('#child-category-modal');
                     setTimeout(function() {
                         self.loadTags();
@@ -191,22 +192,28 @@
                 $('#area-' + targetArea).addClass('active');
             });
 
-            // 親カテゴリカードクリックイベント
+            // 【v2.10.18】親カテゴリカードクリックイベント
             $(document).on('click', '.parent-category-card', function(e) {
                 e.preventDefault();
-                console.log('親カテゴリがクリックされました');
+                console.log('[v2.10.18] 親カテゴリ（地域）がクリックされました');
                 const parentSlug = $(this).data('parent-slug');
-                self.loadChildCategories(parentSlug);
+                // 【v2.10.18】地域から呼び出す場合は isRegion: true
+                self.loadChildCategories(parentSlug, true);
             });
         },
 
         /**
-         * 子カテゴリを読み込み
+         * 【v2.10.18】子カテゴリを読み込み
+         * @param {string} parentSlug - 親カテゴリのスラッグ
+         * @param {boolean} isRegion - 地域からの呼び出しかどうか（デフォルト: false）
          */
-        loadChildCategories: function(parentSlug) {
+        loadChildCategories: function(parentSlug, isRegion) {
             const self = this;
+            // 【v2.10.18】isRegion がundefinedの場合はfalseとする
+            isRegion = isRegion === true;
+
             self.currentParentSlug = parentSlug;
-            console.log('子カテゴリを読み込み中:', parentSlug);
+            console.log('[v2.10.18] 子カテゴリを読み込み中:', parentSlug, ', isRegion:', isRegion);
 
             self.openModal('#child-category-modal');
 
@@ -223,7 +230,8 @@
                 data: {
                     action: 'umaten_get_child_categories',
                     nonce: umatenToppage.nonce,
-                    parent_slug: parentSlug
+                    parent_slug: parentSlug,
+                    is_region: isRegion ? '1' : '0'  // 【v2.10.18】地域フラグを追加
                 },
                 success: function(response) {
                     console.log('子カテゴリ取得成功:', response);
