@@ -184,17 +184,16 @@ class Umaten_Toppage_Ajax_Handler {
     }
 
     /**
-     * タグを取得
+     * 【v2.10.19】タグを取得（全件取得、使用頻度順）
      */
     public function get_tags() {
         check_ajax_referer('umaten_toppage_nonce', 'nonce');
 
-        // すべてのタグを取得（使用頻度順）
+        // すべてのタグを取得（使用頻度順、件数制限なし）
         $tags = get_tags(array(
             'orderby' => 'count',
             'order' => 'DESC',
-            'hide_empty' => false,
-            'number' => 50 // 最大50個のタグを取得
+            'hide_empty' => false
         ));
 
         if (empty($tags) || is_wp_error($tags)) {
